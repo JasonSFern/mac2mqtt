@@ -328,6 +328,11 @@ func updateBattery(client mqtt.Client) {
 	token.Wait()
 }
 
+func updateStatus(client mqtt.Client) {
+	token := client.Publish(getTopicPrefix()+"/status/alive", 0, true, "true")
+	token.Wait()
+}
+
 func main() {
 
 	log.Println("Started")
@@ -339,6 +344,7 @@ func main() {
 	var wg sync.WaitGroup
 	mqttClient := getMQTTClient(c.Ip, c.Port, c.User, c.Password)
 
+	statusTicker := time.NewTicker(60 * time.Second)
 	volumeTicker := time.NewTicker(60 * time.Second)
 	batteryTicker := time.NewTicker(60 * time.Second)
 
@@ -346,12 +352,15 @@ func main() {
 	go func() {
 		for {
 			select {
+			// Publish alive status every minute
+			case _ = <-statusTicker.C:
+				updateStatus(mqttClient)
+			}
+
 			case _ = <-volumeTicker.C:
 				updateVolume(mqttClient)
 				updateMute(mqttClient)
 
-				// Publish alive status every minute
-				mqttClient.Publish(getTopicPrefix()+"/status/alive", 0, true, "true")
 
 			case _ = <-batteryTicker.C:
 				updateBattery(mqttClient)
