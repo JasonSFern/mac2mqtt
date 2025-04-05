@@ -1,4 +1,4 @@
-module bessarabov/mac2mqtt
+module jasonsfern/mac2mqtt
 
 go 1.17
 

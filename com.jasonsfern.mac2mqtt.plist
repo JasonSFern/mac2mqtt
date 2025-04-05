@@ -3,7 +3,7 @@
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>com.bessarabov.mac2mqtt</string>
+        <string>com.jasonsfern.mac2mqtt</string>
         <key>Program</key>
         <string>/Users/USERNAME/mac2mqtt/mac2mqtt</string>
         <key>WorkingDirectory</key>
@@ -12,5 +12,9 @@
         <true/>
         <key>KeepAlive</key>
         <true/>
+        <key>StandardErrorPath</key>
+        <string>/tmp/mac2mqtt.job.err</string>
+        <key>StandardOutPath</key>
+        <string>/tmp/mac2mqtt.job.out</string>
     </dict>
 </plist>

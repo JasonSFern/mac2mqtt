@@ -60,8 +60,43 @@ func (c *config) getConfig() *config {
 	return c
 }
 
-func getHostname() string {
+func getDeviceSerialnumber() string {
+	cmd := "/usr/sbin/ioreg -l | /usr/bin/grep IOPlatformSerialNumber"
+	output, err := exec.Command("/bin/sh", "-c", cmd).Output()
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	outputStr := string(output)
+	last := output[strings.LastIndex(outputStr, " ")+1:]
+	lastStr := string(last)
+
+	// remove all symbols, but [a-zA-Z0-9_-]
+	reg, err := regexp.Compile("[^a-zA-Z0-9_-]+")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	lastStr = reg.ReplaceAllString(lastStr, "")
+
+	return lastStr
+}
+
+func getDeviceModel() string {
+	cmd := "/usr/sbin/system_profiler SPHardwareDataType |/usr/bin/grep Chip | /usr/bin/sed 's/\\(^.*: \\)\\(.*\\)/\\2/'"
+	output, err := exec.Command("/bin/sh", "-c", cmd).Output()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	outputStr := string(output)
+	outputStr = strings.TrimSuffix(outputStr, "\n")
+	return outputStr
+}
+
+func getHostname() string {
 	hostname, err := os.Hostname()
 
 	if err != nil {

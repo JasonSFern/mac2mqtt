@@ -1,8 +1,15 @@
-# Mac2MQTT (updated)
+# Mac2MQTT
 
 `mac2mqtt` is a program that allows viewing and controlling some aspects of computers running macOS via MQTT.
 
 This repo is a fork of bessarabov/mac2mqtt, that fixes bugs and adds features.
+
+The following features have been added:
+
+- mac2mqtt status publishing to MQTT every minute.
+- display brightness control (requires brightness to be installed, can be installed via "brew install brightness")
+- system logging for errors
+- functions to retrieve the mac's model and serial number via system info
 
 It publishes to MQTT:
 
@@ -35,19 +42,19 @@ Edit `mac2mqtt.yaml` (the sample file is in this repository), make binary execut
     $ ./mac2mqtt
     2021/04/12 10:37:28 Started
     2021/04/12 10:37:29 Connected to MQTT
-    2021/04/12 10:37:29 Sending 'true' to topic: mac2mqtt/bessarabov-osx/status/alive
+    2021/04/12 10:37:29 Sending 'true' to topic: mac2mqtt/${hostname}/status/alive
 
 ## Running in the background
 
 You need `mac2mqtt.yaml` and `mac2mqtt` to be placed in the directory `/Users/USERNAME/mac2mqtt/`,
-then you need edit the file `com.bessarabov.mac2mqtt.plist`
+then you need edit the file `com.jasonsfern.mac2mqtt.plist`
 and replace `USERNAME` with your username. Then put the file in `/Library/LaunchAgents/`.
 
 And run:
 
-    launchctl load /Library/LaunchAgents/com.bessarabov.mac2mqtt.plist
+    launchctl load /Library/LaunchAgents/com.jasonsfern.mac2mqtt.plist
 
-(To stop you need to run `launchctl unload /Library/LaunchAgents/com.bessarabov.mac2mqtt.plist`)
+(To stop you need to run `launchctl unload /Library/LaunchAgents/com.jasonsfern.mac2mqtt.plist`)
 
 ## Home Assistant sample config
 
@@ -62,7 +69,7 @@ script:
     sequence:
       - service: mqtt.publish
         data:
-          topic: 'mac2mqtt/bessarabov-osx/command/sleep'
+          topic: 'mac2mqtt/${hostname}/command/sleep'
           payload: 'sleep'
 
   air2_shutdown:
@@ -70,7 +77,7 @@ script:
     sequence:
       - service: mqtt.publish
         data:
-          topic: 'mac2mqtt/bessarabov-osx/command/shutdown'
+          topic: 'mac2mqtt/${hostname}/command/shutdown'
           payload: 'shutdown'
 
   air2_displaysleep:
@@ -78,25 +85,25 @@ script:
     sequence:
       - service: mqtt.publish
         data:
-          topic: 'mac2mqtt/bessarabov-osx/command/displaysleep'
+          topic: 'mac2mqtt/${hostname}/command/displaysleep'
           payload: 'displaysleep'
 
 mqtt:
   sensor:
     - name: air2_alive
       icon: mdi:laptop
-      state_topic: 'mac2mqtt/bessarabov-osx/status/alive'
+      state_topic: 'mac2mqtt/${hostname}/status/alive'
 
     - name: 'air2_battery'
       icon: mdi:battery-high
       unit_of_measurement: '%'
-      state_topic: 'mac2mqtt/bessarabov-osx/status/battery'
+      state_topic: 'mac2mqtt/${hostname}/status/battery'
 ```
 
 ## MQTT topics structure
 
 The program is working with several MQTT topics. All topics are prefixed with `mac2mqtt` + `COMPUTER_NAME`.
-For example, the topic with the current volume on my machine is `mac2mqtt/bessarabov-osx/status/volume`
+For example, the topic with the current volume on my machine is `mac2mqtt/${hostname}/status/volume`
 
 `mac2mqtt` send info to the topics `mac2mqtt/COMPUTER_NAME/status/#` and listen for commands in topics
 `mac2mqtt/COMPUTER_NAME/command/#`.
