@@ -415,12 +415,10 @@ func main() {
 			// Publish alive status every minute
 			case _ = <-statusTicker.C:
 				updateStatus(mqttClient)
-			}
 
 			case _ = <-volumeTicker.C:
 				updateVolume(mqttClient)
 				updateMute(mqttClient)
-
 
 			case _ = <-batteryTicker.C:
 				updateBattery(mqttClient)
