@@ -115,18 +115,50 @@ func getCurrentVolume() int {
 	return i
 }
 
+// Get current brightness level (0-100)
+func getCurrentBrightness() int {
+	output := getCommandOutput("brightness", "-l")
+	
+	// Parse the output to extract the brightness value
+	// Example output: "brightness 0.50"
+	parts := strings.Fields(output)
+	if len(parts) < 2 {
+		return 50 // Default in case of parsing error
+	}
+	
+	brightnessFloat, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil {
+		return 50 // Default in case of error
+	}
+	
+	// Convert from 0-1 scale to 0-100
+	return int(brightnessFloat * 100)
+}
+
 func runCommand(name string, arg ...string) {
 	cmd := exec.Command(name, arg...)
 
 	_, err := cmd.Output()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error running command %s: %v", name, err)
 	}
 }
 
 // from 0 to 100
 func setVolume(i int) {
 	runCommand("/usr/bin/osascript", "-e", "set volume output volume "+strconv.Itoa(i))
+}
+
+// from 0 to 100, but brightness tool accepts 0 to 1
+func setBrightness(i int) {
+	// Convert from 0-100 scale to 0-1 scale
+	brightnessValue := float64(i) / 100.0
+	
+	// Format to 2 decimal places
+	brightnessStr := strconv.FormatFloat(brightnessValue, 'f', 2, 64)
+	
+	// Use the brightness command-line tool
+	runCommand("brightness", brightnessStr)
 }
 
 // true - turn mute on
@@ -229,6 +261,21 @@ func listen(client mqtt.Client, topic string) {
 
 		}
 
+		if msg.Topic() == getTopicPrefix()+"/command/brightness" {
+
+			i, err := strconv.Atoi(string(msg.Payload()))
+			if err == nil && i >= 0 && i <= 100 {
+
+				setBrightness(i)
+
+				updateBrightness(client)
+
+			} else {
+				log.Println("Incorrect brightness value")
+			}
+
+		}
+
 		if msg.Topic() == getTopicPrefix()+"/command/mute" {
 
 			b, err := strconv.ParseBool(string(msg.Payload()))
@@ -306,6 +353,11 @@ func updateMute(client mqtt.Client) {
 	token.Wait()
 }
 
+func updateBrightness(client mqtt.Client) {
+	token := client.Publish(getTopicPrefix()+"/status/brightness", 0, false, strconv.Itoa(getCurrentBrightness()))
+	token.Wait()
+}
+
 func getBatteryChargePercent() string {
 
 	output := getCommandOutput("/usr/bin/pmset", "-g", "batt")
@@ -347,6 +399,14 @@ func main() {
 	statusTicker := time.NewTicker(60 * time.Second)
 	volumeTicker := time.NewTicker(60 * time.Second)
 	batteryTicker := time.NewTicker(60 * time.Second)
+	brightnessTicker := time.NewTicker(60 * time.Second)
+
+	// Initial updates
+	updateStatus(mqttClient)
+	updateVolume(mqttClient)
+	updateMute(mqttClient)
+	updateBattery(mqttClient)
+	updateBrightness(mqttClient)
 
 	wg.Add(1)
 	go func() {
@@ -355,15 +415,16 @@ func main() {
 			// Publish alive status every minute
 			case _ = <-statusTicker.C:
 				updateStatus(mqttClient)
-			}
 
 			case _ = <-volumeTicker.C:
 				updateVolume(mqttClient)
 				updateMute(mqttClient)
 
-
 			case _ = <-batteryTicker.C:
 				updateBattery(mqttClient)
+                
+			case _ = <-brightnessTicker.C:
+				updateBrightness(mqttClient)
 			}
 		}
 	}()

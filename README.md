@@ -6,20 +6,22 @@ This repo is a fork of bessarabov/mac2mqtt, that fixes bugs and adds features.
 
 It publishes to MQTT:
 
- * current volume
- * volume mute state
- * battery charge percent
-
+- current mac2mqtt status
+- current volume
+- volume mute state
+- battery charge percent
+- display brightness percent (requires homebrew package "brightness" to work).
 
 You can send topics to:
 
- * change volume
- * mute/unmute
- * put the computer to sleep
- * shutdown computer
- * turn off the display
- * wake display
- * run macOS shortcuts
+- change display brightness
+- change volume
+- mute/unmute
+- put the computer to sleep
+- shutdown computer
+- turn off the display
+- wake display
+- run macOS shortcuts
 
 ## Running
 
@@ -41,7 +43,6 @@ You need `mac2mqtt.yaml` and `mac2mqtt` to be placed in the directory `/Users/US
 then you need edit the file `com.bessarabov.mac2mqtt.plist`
 and replace `USERNAME` with your username. Then put the file in `/Library/LaunchAgents/`.
 
-
 And run:
 
     launchctl load /Library/LaunchAgents/com.bessarabov.mac2mqtt.plist
@@ -61,35 +62,35 @@ script:
     sequence:
       - service: mqtt.publish
         data:
-          topic: "mac2mqtt/bessarabov-osx/command/sleep"
-          payload: "sleep"
+          topic: 'mac2mqtt/bessarabov-osx/command/sleep'
+          payload: 'sleep'
 
   air2_shutdown:
     icon: mdi:laptop
     sequence:
       - service: mqtt.publish
         data:
-          topic: "mac2mqtt/bessarabov-osx/command/shutdown"
-          payload: "shutdown"
+          topic: 'mac2mqtt/bessarabov-osx/command/shutdown'
+          payload: 'shutdown'
 
   air2_displaysleep:
     icon: mdi:laptop
     sequence:
       - service: mqtt.publish
         data:
-          topic: "mac2mqtt/bessarabov-osx/command/displaysleep"
-          payload: "displaysleep"
+          topic: 'mac2mqtt/bessarabov-osx/command/displaysleep'
+          payload: 'displaysleep'
 
 mqtt:
   sensor:
     - name: air2_alive
       icon: mdi:laptop
-      state_topic: "mac2mqtt/bessarabov-osx/status/alive"
+      state_topic: 'mac2mqtt/bessarabov-osx/status/alive'
 
-    - name: "air2_battery"
+    - name: 'air2_battery'
       icon: mdi:battery-high
-      unit_of_measurement: "%"
-      state_topic: "mac2mqtt/bessarabov-osx/status/battery"
+      unit_of_measurement: '%'
+      state_topic: 'mac2mqtt/bessarabov-osx/status/battery'
 ```
 
 ## MQTT topics structure
@@ -122,6 +123,10 @@ The value ranges from 0 (inclusive) to 100 (inclusive) and represents the curren
 
 The value of this topic is updated every 60 seconds.
 
+### PREFIX + `/command/brightness`
+
+You can send integer numbers from 0 (inclusive) to 100 (inclusive) to this topic. It will set the display brightness on the computer (requires homebrew package "brightness" to work).
+
 ### PREFIX + `/command/volume`
 
 You can send integer numbers from 0 (inclusive) to 100 (inclusive) to this topic. It will set the volume on the computer.
@@ -133,7 +138,7 @@ is unmuted.
 
 ### PREFIX + `/command/sleep`
 
-You can send  `sleep` to this topic, and it will put the computer to sleep. Sending other values will do nothing.
+You can send `sleep` to this topic, and it will put the computer to sleep. Sending other values will do nothing.
 
 ### PREFIX + `/command/shutdown`
 
