@@ -350,6 +350,9 @@ func main() {
 				updateVolume(mqttClient)
 				updateMute(mqttClient)
 
+				// Publish alive status every minute
+				mqttClient.Publish(getTopicPrefix()+"/status/alive", 0, true, "true")
+
 			case _ = <-batteryTicker.C:
 				updateBattery(mqttClient)
 			}
