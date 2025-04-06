@@ -326,39 +326,23 @@ func listen(client mqtt.Client, topic string) {
 
 		}
 
-		if msg.Topic() == getTopicPrefix()+"/command/sleep" {
+		if msg.Topic() == getTopicPrefix()+"/command/set" {
 
 			if string(msg.Payload()) == "sleep" {
 				commandSleep()
 			}
 
-		}
-
-		if msg.Topic() == getTopicPrefix()+"/command/displaysleep" {
-
 			if string(msg.Payload()) == "displaysleep" {
 				commandDisplaySleep()
 			}
-
-		}
-
-		if msg.Topic() == getTopicPrefix()+"/command/displaywake" {
 
 			if string(msg.Payload()) == "displaywake" {
 				commandDisplayWake()
 			}
 
-		}
-
-		if msg.Topic() == getTopicPrefix()+"/command/shutdown" {
-
 			if string(msg.Payload()) == "shutdown" {
 				commandShutdown()
 			}
-
-		}
-
-		if msg.Topic() == getTopicPrefix()+"/command/screensaver" {
 
 			if string(msg.Payload()) == "screensaver" {
 				commandScreensaver()

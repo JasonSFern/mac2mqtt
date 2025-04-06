@@ -10,6 +10,7 @@ The following features have been added:
 - display brightness control (requires brightness to be installed, can be installed via "brew install brightness")
 - system logging for errors
 - functions to retrieve the mac's model and serial number via system info
+- changed the topic for system functions to use /set
 
 It publishes to MQTT:
 
@@ -143,33 +144,19 @@ You can send integer numbers from 0 (inclusive) to 100 (inclusive) to this topic
 You can send `true` or `false` to this topic. When you send `true` the computer is muted. When you send `false` the computer
 is unmuted.
 
-### PREFIX + `/command/sleep`
-
-You can send `sleep` to this topic, and it will put the computer to sleep. Sending other values will do nothing.
-
-### PREFIX + `/command/shutdown`
-
-You can send `shutdown` to this topic. It will try to shut down the computer. The way it is done depends on
-the user who ran the program. If the program is run by `root` the computer will shut down, but if it is run by an ordinary user
-the computer will not shut down if there is another user who logged in.
-
-Sending some other value but `shutdown` will do nothing.
-
-### PREFIX + `/command/displaysleep`
-
-You can send `displaysleep` to this topic. It will turn off the display. Sending some other value will do nothing.
-
 ### PREFIX + `/command/runshortcut`
 
 You can send the name of a shortcut to this topic. It will run this shortcut in the Shortcuts app.
 
-### PREFIX + `/command/displaywake`
+### PREFIX + `/command/set`
 
-You can send `displaywake` to this topic. It will turn on the display. Sending some other value will do nothing.
+The following are the options that can be sent to `/set`. Any any values not part of this list will do nothing.
 
-### PREFIX + `/command/screensaver`
-
-You can send `screensaver` to this topic. It will turn start your screensaver. Sending some other value will do nothing.
+- `screensaver`: It will turn start your screensaver.
+- `displaywake`: It will turn on the display.
+- `sleep`: It will put the computer to sleep.
+- `shutdown`: It will try to shut down the computer. The way it is done depends on the user who ran the program. If the program is run by `root` the computer will shut down, but if it is run by an ordinary user the computer will not shut down if there is another user who logged in.
+- `displaysleep`: It will turn off the display.
 
 ## Building
 
