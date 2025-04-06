@@ -161,9 +161,18 @@ func getCurrentBrightness() int {
 		return 50 // Default in case of parsing error
 	}
 	
-	brightnessFloat, err := strconv.ParseFloat(parts[1], 64)
-	if err != nil {
-		return 50 // Default in case of error
+	// Find the brightness value in the output
+	var brightnessFloat float64
+	var err error
+	for i, part := range parts {
+		if part == "brightness" && i+1 < len(parts) {
+			brightnessFloat, err = strconv.ParseFloat(parts[i+1], 64)
+			if err != nil {
+				log.Printf("Error parsing brightness value: %v\n", err)
+				return 50 // Default in case of error
+			}
+			break
+		}
 	}
 	
 	// Convert from 0-1 scale to 0-100
@@ -368,7 +377,7 @@ func updateVolume(client mqtt.Client) {
 }
 
 func updateMute(client mqtt.Client) {
-	token := client.Publish(getTopicPrefix()+"/status/mute", 0, false, strconv.FormatBool(getMuteStatus()))
+	token := client.Publish(getTopicPrefix()+"/status/mute", 0, true, strconv.FormatBool(getMuteStatus()))
 	token.Wait()
 }
 
